@@ -45,10 +45,12 @@ class MovieController extends Controller
         if ($request->hasFile('Image')) {
             $file = $request->file('Image');
             $img = $request['image'] = $file;
-            $cloud = Cloudinary::upload($img->getRealPath(), [
+            ####
+           $upload = Cloudinary::upload($img->getRealPath(), [
                 'folder' => 'movies',
-                'format' => 'jpg',
-            ])->getPublicId();
+            ]);
+
+            $cloud = $upload->getSecurePath();
             $movie = new Movie(
                 [
                     'name' => $request->name,
@@ -98,12 +100,12 @@ class MovieController extends Controller
         if ($request->hasFile('Image')) {
             $file = $request->file('Image');
             $img = $request['image'] = $file;
-            $cloud = Cloudinary::upload($img->getRealPath(), [
+            ###
+            $upload = Cloudinary::upload($img->getRealPath(), [
                 'folder' => 'movies',
-                'format' => 'jpg',
-            ])->getPublicId();
-            $request['image'] = $cloud;
-            $movie['image'] = $request['image'];
+            ]);
+
+            $movie->image = $upload->getSecurePath();
         }
         $movie['name'] = $request['name'];
         $movie['showTime'] = $request['showTime'];
