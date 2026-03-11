@@ -13,7 +13,7 @@ DB::table('infos')->insert([
         'instagram' => 'https://www.instagram.com/',
         'youtube' => 'https://www.youtube.com/',
         'worktime' => 'Time: 06:00 - 23:00',
-        'copyright' => '© Quang Truong, 2023. All rights reserved. Done by Quang Truong'
+        'copyright' => '© Quang Truong, 2026. All rights reserved. Done by Quang Truong'
 
     ]
 ]);

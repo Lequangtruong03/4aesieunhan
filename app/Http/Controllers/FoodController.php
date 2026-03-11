@@ -21,57 +21,66 @@ class FoodController extends Controller
 
     public function postCreate(Request $request)
     {
-        $request->validate([
-            'name' => 'required'
-        ], [
-            'name.required' => 'Name is required',
-        ]);
-        if ($request->hasFile('Image')) {
-            $file = $request->file('Image');
-            $img = $request['image'] = $file;
-            $cloud = Cloudinary::upload($img->getRealPath(), [
-                'folder' => 'food',
-                'format' => 'jpg',
-
-            ])->getPublicId();
-            $food = new Food(
-                [
-                    'name' => $request->name,
-                    'image' => $cloud,
-                    'price' => $request->price,
-                ]
-            );
-        }else{
-            return redirect('admin/food')->with('warning','Vui lòng nhập hình ảnh');
+        if (!$request->hasFile('Image')) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Vui lòng chọn ảnh'
+            ]);
         }
+
+        $file = $request->file('Image');
+
+        $upload = Cloudinary::upload($file->getRealPath(),[
+            'folder'=>'food'
+        ]);
+
+        $image = $upload->getSecurePath();
+
+        $food = new Food();
+        $food->name = $request->name;
+        $food->image = $image;
+        $food->price = $request->price;
         $food->save();
-        return redirect('admin/food')->with('success', 'Add Food Successfully!');
+
+        return response()->json([
+            'status' => 1,
+            'image' => $image,
+            'name' => $food->name,
+            'price' => $food->price
+        ]);
     }
 
     public function postEdit(Request $request, $id)
     {
         $food = Food::find($id);
 
+        // validate tên sản phẩm
         $request->validate([
             'name' => 'required'
-        ], [
+        ],[
             'name.required' => "Please enter Food's name"
         ]);
 
+        // upload ảnh nếu có
         if ($request->hasFile('Image')) {
+
             $file = $request->file('Image');
             $img = $request['image'] = $file;
-            if ($food['image'] != '') {
-                Cloudinary::destroy($food['image']);
-            }
-            $cloud = Cloudinary::upload($img->getRealPath(), [
+
+            $upload = Cloudinary::upload($img->getRealPath(), [
                 'folder' => 'food',
-                'format' => 'jpg',
-            ])->getPublicId();
-            $request['image'] = $cloud;
+            ]);
+
+            $food->image = $upload->getSecurePath();
         }
-        $food->update($request->all());
-        return redirect('admin/food')->with('success', 'Updated Successfully!');
+
+        // cập nhật dữ liệu
+        $food['name'] = $request['name'];
+        $food['price'] = $request['price'];
+
+        $food->update();
+
+        return redirect('admin/food')->with('success', "Cập nhật thành công!");
     }
 
     public function delete($id)

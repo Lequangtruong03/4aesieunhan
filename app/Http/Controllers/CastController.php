@@ -8,51 +8,54 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class CastController extends Controller
 {
-    function __construct(){
-        $cloud_name = cloud_name();
-        view()->share('cloud_name',$cloud_name);
-    }
-    public function cast()
+    function __construct()
     {
-        $cast = Cast::orderBy('id', 'DESC')->Paginate(5);
-        return view('admin.cast.list', ['cast' => $cast]);
+        $cloud_name = cloud_name();
+        view()->share('cloud_name', $cloud_name);
     }
 
+    // Danh sách diễn viên
+    public function cast()
+    {
+        $cast = Cast::orderBy('id', 'DESC')->paginate(5);
+        return view('admin.cast.list', compact('cast'));
+    }
+
+    // Tạo cast
     public function postCreate(Request $request)
     {
         $request->validate([
             'name' => 'required'
         ], [
-            'name.required' => 'Name is required',
+            'name.required' => 'Name is required'
         ]);
-        if ($request->hasFile('Image')) {
-            $file = $request->file('Image');
-            $img = $request['image'] = $file;
-            $cloud = Cloudinary::upload($img->getRealPath(), [
-                'folder' => 'cast',
-                'format' => 'jpg',
 
-            ])->getPublicId();
-            $cast = new Cast(
-                [
-                    'name' => $request->name,
-                    'image' => $cloud,
-                    'birthday' => $request->birthday,
-                    'national' => $request->national,
-                    'content' => $request->contents
-                ]
-            );
-
-        }else{
-            return redirect('admin/cast')->with('warning','Vui lòng nhập hình ảnh');
+        if (!$request->hasFile('Image')) {
+            return redirect('admin/cast')->with('warning', 'Vui lòng nhập hình ảnh');
         }
+
+        $file = $request->file('Image');
+
+        $upload = Cloudinary::upload($file->getRealPath(), [
+            'folder' => 'cast'
+        ]);
+
+        $cast = new Cast();
+        $cast->name = $request->name;
+        $cast->image = $upload->getSecurePath(); // lưu URL ảnh
+        $cast->birthday = $request->birthday;
+        $cast->national = $request->national;
+        $cast->content = $request->contents;
+
         $cast->save();
-        return redirect('admin/cast');
+
+        return redirect('admin/cast')->with('success', 'Add Successfully!');
     }
 
+    // Sửa cast
     public function postEdit(Request $request, $id)
     {
-        $cast = Cast::find($id);
+        $cast = Cast::findOrFail($id);
 
         $request->validate([
             'name' => 'required'
@@ -61,27 +64,33 @@ class CastController extends Controller
         ]);
 
         if ($request->hasFile('Image')) {
+
             $file = $request->file('Image');
-            $img = $request['image'] = $file;
-            if ($cast['image'] != '') {
-                Cloudinary::destroy($cast['image']);
-            }
-            $cloud = Cloudinary::upload($img->getRealPath(), [
-                'folder' => 'cast',
-                'format' => 'jpg',
-            ])->getPublicId();
-            $request['image'] = $cloud;
+
+            $upload = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'cast'
+            ]);
+
+            $cast->image = $upload->getSecurePath();
         }
-        $cast->update($request->all());
+
+        $cast->name = $request->name;
+        $cast->birthday = $request->birthday;
+        $cast->national = $request->national;
+        $cast->content = $request->contents;
+
+        $cast->save();
+
         return redirect('admin/cast')->with('success', 'Updated Successfully!');
     }
 
+    // Xóa cast
     public function delete($id)
     {
-        $cast = Cast::find($id);
-        Cloudinary::destroy($cast['image']);
+        $cast = Cast::findOrFail($id);
+
         $cast->delete();
+
         return response()->json(['success' => 'Delete Successfully']);
     }
-
 }

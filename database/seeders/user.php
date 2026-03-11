@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 DB::table('users')->insert(
     [
         [
-            'fullName' => 'HMCinema',
+            'fullName' => 'QTCinema',
             'password' => bcrypt('1'),
             'email' => 'admin@gmail.com',
             'phone' => '123456789',
@@ -22,9 +22,9 @@ DB::table('users')->insert(
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
         ],
         [
-            'fullName' => 'Phúc Hữu',
+            'fullName' => 'phuc lee',
             'password' => bcrypt('1'),
-            'email' => 'phuchuu0120@gmail.com',
+            'email' => 'phuclee0120@gmail.com',
             'phone' => '1111111',
             'code'=>rand(10000000000, 9999999999999999),
             'point'=>'10000',

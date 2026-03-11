@@ -61,4 +61,18 @@
     </div>
 </form>
 
+<script>
+$('.image-combo').change(function(e){
+
+    let reader = new FileReader();
+
+    reader.onload = function(e){
+        $('.img_combo').attr('src', e.target.result);
+        $('.img_combo').removeClass('d-none');
+    }
+
+    reader.readAsDataURL(e.target.files[0]);
+
+});
+</script>
 

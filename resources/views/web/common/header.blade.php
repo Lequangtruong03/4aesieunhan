@@ -1,7 +1,7 @@
 <!-- Header section -->
 <nav class="header navbar navbar-expand-lg navbar-dark shadow" style="background-color: #2e292e">
     <div class="container">
-        <a class="navbar-brand" href="#">HMCinema</a>
+        <a class="navbar-brand" href="#">QTCinema</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

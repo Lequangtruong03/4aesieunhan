@@ -14,7 +14,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="example-text-input" class="form-control-label">@lang('lang.name')</label>
-                                    <input class="form-control" type="text" value="{!! $value['name'] !!}">
+                                    <input class="form-control" type="text" name="name" value="{!! $value['name'] !!}">
                                 </div>
                             </div>
                             <div class="col-md-6">

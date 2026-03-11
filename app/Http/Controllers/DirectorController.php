@@ -3,21 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Director;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class DirectorController extends Controller
 {
-    function __construct(){
-        $cloud_name = cloud_name();
-        view()->share('cloud_name',$cloud_name);
-    }
-    public function director()
+    function __construct()
     {
-        $director = Director::orderBy('id', 'DESC')->Paginate(5);
-        return view('admin.director.list', ['director' => $director]);
+        $cloud_name = cloud_name();
+        view()->share('cloud_name', $cloud_name);
     }
 
+    // danh sách director
+    public function director()
+    {
+        $director = Director::orderBy('id', 'DESC')->paginate(5);
+        return view('admin.director.list', compact('director'));
+    }
+
+    // tạo director
     public function postCreate(Request $request)
     {
         $request->validate([
@@ -25,32 +29,33 @@ class DirectorController extends Controller
         ], [
             'name.required' => 'Name is required',
         ]);
-        if ($request->hasFile('Image')) {
-            $file = $request->file('Image');
-            $img = $request['image'] = $file;
-            $cloud = Cloudinary::upload($img->getRealPath(), [
-                'folder' => 'director',
-                'format' => 'jpg',
-            ])->getPublicId();
-            $director = new Director(
-                [
-                    'name' => $request->name,
-                    'image' => $cloud,
-                    'birthday' => $request->birthday,
-                    'national' => $request->national,
-                    'content' => $request->contents
-                ]
-            );
-        }else{
-            return redirect('admin/cast')->with('warning','Vui lòng nhập hình ảnh');
+
+        if (!$request->hasFile('Image')) {
+            return redirect('admin/director')->with('warning', 'Vui lòng nhập hình ảnh');
         }
+
+        $file = $request->file('Image');
+
+        $upload = Cloudinary::upload($file->getRealPath(), [
+            'folder' => 'director'
+        ]);
+
+        $director = new Director();
+        $director->name = $request->name;
+        $director->image = $upload->getSecurePath();   // lưu URL ảnh
+        $director->birthday = $request->birthday;
+        $director->national = $request->national;
+        $director->content = $request->contents;
+
         $director->save();
-        return redirect('admin/director');
+
+        return redirect('admin/director')->with('success', 'Add Successfully!');
     }
 
+    // sửa director
     public function postEdit(Request $request, $id)
     {
-        $director = Director::find($id);
+        $director = Director::findOrFail($id);
 
         $request->validate([
             'name' => 'required'
@@ -59,26 +64,33 @@ class DirectorController extends Controller
         ]);
 
         if ($request->hasFile('Image')) {
+
             $file = $request->file('Image');
-            $img = $request['image'] = $file;
-            if ($director['image'] != '') {
-                Cloudinary::destroy($director['image']);
-            }
-            $cloud = Cloudinary::upload($img->getRealPath(), [
-                'folder' => 'director',
-                'format' => 'jpg',
-            ])->getPublicId();
-            $request['image'] = $cloud;
+
+            $upload = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'director'
+            ]);
+
+            $director->image = $upload->getSecurePath();
         }
-        $director->update($request->all());
+
+        $director->name = $request->name;
+        $director->birthday = $request->birthday;
+        $director->national = $request->national;
+        $director->content = $request->contents;
+
+        $director->save();
+
         return redirect('admin/director')->with('success', 'Updated Successfully!');
     }
 
+    // xóa director
     public function delete($id)
     {
-        $director = Director::find($id);
-        Cloudinary::destroy($director['image']);
+        $director = Director::findOrFail($id);
+
         $director->delete();
+
         return response()->json(['success' => 'Delete Successfully']);
     }
 }
